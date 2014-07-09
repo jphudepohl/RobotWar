@@ -36,12 +36,9 @@ CGFloat midY = 160.0;
     CGFloat robotX = CGRectGetMidX (robotBox);
     CGFloat robotY = CGRectGetMidY (robotBox);
     while (true) {
-        
+        NSLog(_corner);
         if (_currentRobotState == RobotStateDefault) {
             NSLog(@"default");
-        }
-        else if (_currentRobotState == RobotStateFireAtDetectedRobot) {
-            NSLog(@"fireatdetectedrobot");
         }
         else if (_currentRobotState == RobotStateMoveToCorner) {
             NSLog(@"movetocorner");
@@ -51,30 +48,14 @@ CGFloat midY = 160.0;
         }
 
         
-        if (_currentRobotState == RobotStateFireAtDetectedRobot) {
-            
-            if ((self.currentTimestamp - _lastKnownPositionTimestamp) > 1.f) {
-                _currentRobotState = RobotStateMoveToCorner;
-            } else {
-                CGFloat angle = [self angleBetweenGunHeadingDirectionAndWorldPosition:_lastKnownPosition];
-                if (angle >= 0) {
-                    [self turnGunRight:abs(angle)];
-                } else {
-                    [self turnGunLeft:abs(angle)];
-                }
-                [self shoot];
-            }
-        }
-        
         if (_currentRobotState == RobotStateDefault) {
             _currentRobotState = RobotStateMoveToCorner;
         }
         
-        if (_currentRobotState == RobotStateMoveToCorner) {
+        else if (_currentRobotState == RobotStateMoveToCorner) {
             NSLog(@"movetocorner");
             if ( robotX < midX ) {
                 if ( robotY < midY ) {
-                    NSLog(@"test1");
                     _corner = @"LL";
                     [self moveToXCoord:0.0 andYCoord:0.0]; // lower left
                 }
@@ -97,7 +78,7 @@ CGFloat midY = 160.0;
         }
         
         
-        if (_currentRobotState == RobotStateRandomFire) {
+        else if (_currentRobotState == RobotStateRandomFire) {
             if ([_corner isEqualToString:@"LL"]) {
                 [self moveGunDirectionToXCoord:0.0 andYCoord:maxY];
             }
@@ -122,27 +103,23 @@ CGFloat midY = 160.0;
 }
 
 - (void) moveToNextCorner {
-    NSLog(@"movetonextcornercalled");
-    CGFloat x = self.currentTimestamp;
-    NSLog(@"%f, %f" , x, _atCornerTimestamp);
     if ([_corner isEqualToString:@"LL"]) {
-        [self moveToXCoord:maxX andYCoord:0.0];
         _corner = @"LR";
+        [self moveToXCoord:maxX andYCoord:0.0];
     }
     else if ([_corner isEqualToString:@"LR"]) {
-        [self moveToXCoord:maxX andYCoord:maxY];
         _corner = @"UR";
+        [self moveToXCoord:maxX andYCoord:maxY];
     }
     else if ([_corner isEqualToString:@"UR"]) {
-        [self moveToXCoord:0.0 andYCoord:maxY];
         _corner = @"UL";
+        [self moveToXCoord:0.0 andYCoord:maxY];
     }
     else if ([_corner isEqualToString:@"UL"]) {
-        [self moveToXCoord:0.0 andYCoord:0.0];
         _corner = @"LL";
+        [self moveToXCoord:0.0 andYCoord:0.0];
     }
     _currentRobotState = RobotStateRandomFire;
-
 }
 
 - (void)moveToXCoord:(CGFloat)x andYCoord:(CGFloat)y {
@@ -198,16 +175,19 @@ CGFloat midY = 160.0;
 }
 
 - (void)scannedRobot:(Robot *)robot atPosition:(CGPoint)position {
-    if (_currentRobotState != RobotStateFireAtDetectedRobot) {
+    /* if (_currentRobotState != RobotStateFireAtDetectedRobot) {
         [self cancelActiveAction];
     }
     
     _lastKnownPosition = position;
     _lastKnownPositionTimestamp = self.currentTimestamp;
-    _currentRobotState = RobotStateFireAtDetectedRobot;
+    _currentRobotState = RobotStateFireAtDetectedRobot; */
 }
 
 - (void)hitWall:(RobotWallHitDirection)hitDirection hitAngle:(CGFloat)angle {
+    if (_currentRobotState != RobotStateRandomFire) {
+        [self cancelActiveAction];
+    }
     _currentRobotState = RobotStateRandomFire;
 }
 
